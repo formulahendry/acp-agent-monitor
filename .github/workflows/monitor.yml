@@ -16,7 +16,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 'lts/*'
 
       # Uncomment if any agent uses uvx / Python
       # - uses: actions/setup-python@v5
