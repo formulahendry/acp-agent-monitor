@@ -156,8 +156,16 @@ async function probeAgent(agent) {
 
                         // Remove volatile _meta fields for stable snapshots
                         const snapshot = sanitize(result);
+
+                        // Exclude agentInfo.version — it changes frequently
+                        // and does not indicate a capability change.
+                        const agentInfo = snapshot.agentInfo ? {...snapshot.agentInfo} : null;
+                        if (agentInfo) {
+                            delete agentInfo.version;
+                        }
+
                         writeSnapshot(agent.id, {
-                            agentInfo: snapshot.agentInfo ?? null,
+                            agentInfo,
                             protocolVersion: snapshot.protocolVersion,
                             agentCapabilities: snapshot.agentCapabilities ?? {},
                             authMethods: snapshot.authMethods ?? [],

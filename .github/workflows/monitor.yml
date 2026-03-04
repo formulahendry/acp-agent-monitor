@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 jobs:
   monitor:
@@ -28,17 +29,58 @@ jobs:
         run: node script/check.mjs
 
       - name: Commit snapshot changes
+        id: commit
         run: |
           git config user.name "acp-monitor[bot]"
           git config user.email "acp-monitor[bot]@users.noreply.github.com"
           git add snapshots/
           if git diff --cached --quiet; then
             echo "No capability changes detected."
+            echo "changed=false" >> $GITHUB_OUTPUT
           else
             echo "### Changes detected:"
             git diff --cached --stat
             echo ""
-            git diff --cached -- '*.json'
+            git diff --cached -- '*.json' > /tmp/capability-diff.txt
+            cat /tmp/capability-diff.txt
             git commit -m "snapshot: capability changes detected $(date -u +%Y-%m-%d)"
             git push
+            echo "changed=true" >> $GITHUB_OUTPUT
           fi
+
+      - name: Create or update issue on capability change
+        if: steps.commit.outputs.changed == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const diff = fs.readFileSync('/tmp/capability-diff.txt', 'utf8');
+            const date = new Date().toISOString().split('T')[0];
+
+            // Check for existing open issue to avoid duplicates
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'capability-change',
+            });
+
+            if (existing.data.length > 0) {
+              // Append to existing open issue
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.data[0].number,
+                body: `### Changes detected on ${date}\n\n\`\`\`diff\n${diff}\n\`\`\``,
+              });
+              console.log(`Commented on existing issue #${existing.data[0].number}`);
+            } else {
+              const issue = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `⚠️ ACP Capability Changes Detected (${date})`,
+                body: `The daily ACP capability monitor detected changes:\n\n\`\`\`diff\n${diff}\n\`\`\`\n\nClose this issue after reviewing the changes.`,
+                labels: ['capability-change'],
+              });
+              console.log(`Created issue #${issue.data.number}`);
+            }

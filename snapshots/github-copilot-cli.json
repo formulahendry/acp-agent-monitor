@@ -1,8 +1,7 @@
 {
   "agentInfo": {
     "name": "Copilot",
-    "title": "Copilot",
-    "version": "0.0.421"
+    "title": "Copilot"
   },
   "protocolVersion": 1,
   "agentCapabilities": {
