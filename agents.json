@@ -11,7 +11,11 @@
       },
       "initializeRequest": {
         "protocolVersion": 1,
-        "clientCapabilities": {}
+        "clientCapabilities": {},
+        "clientInfo": {
+          "name": "acp-agent-monitor",
+          "version": "1.0.0"
+        }
       }
     }
   ],
