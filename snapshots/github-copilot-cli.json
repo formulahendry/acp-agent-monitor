@@ -2,15 +2,18 @@
   "agentInfo": {
     "name": "Copilot",
     "title": "Copilot",
-    "version": "0.0.403"
+    "version": "0.0.421"
   },
   "protocolVersion": 1,
   "agentCapabilities": {
-    "loadSession": false,
+    "loadSession": true,
     "promptCapabilities": {
       "image": true,
       "audio": false,
       "embeddedContext": true
+    },
+    "sessionCapabilities": {
+      "list": {}
     }
   },
   "authMethods": [
