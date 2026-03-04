@@ -5,9 +5,9 @@
   },
   "protocolVersion": 1,
   "agentCapabilities": {
-    "loadSession": true,
+    "loadSession": false,
     "promptCapabilities": {
-      "image": true,
+      "image": false,
       "audio": false,
       "embeddedContext": true
     },
