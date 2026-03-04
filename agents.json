@@ -6,7 +6,7 @@
       "name": "GitHub Copilot CLI",
       "spawn": {
         "command": "npx",
-        "args": ["-y", "@github/copilot", "--acp", "--stdio"],
+        "args": ["-y", "@github/copilot@0.0.403", "--acp", "--stdio"],
         "timeoutMs": 30000
       },
       "initializeRequest": {
