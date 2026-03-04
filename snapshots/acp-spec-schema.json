@@ -1,0 +1,114 @@
+{
+  "sourceUrl": "https://raw.githubusercontent.com/agentclientprotocol/agent-client-protocol/main/schema/schema.json",
+  "definitions": {
+    "AgentCapabilities": {
+      "description": "Capabilities supported by the agent.\n\nAdvertised during initialization to inform the client about\navailable features and content types.\n\nSee protocol docs: [Agent Capabilities](https://agentclientprotocol.com/protocol/initialization#agent-capabilities)",
+      "properties": {
+        "loadSession": {
+          "default": false,
+          "description": "Whether the agent supports `session/load`.",
+          "type": "boolean"
+        },
+        "mcpCapabilities": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/McpCapabilities"
+            }
+          ],
+          "default": {
+            "http": false,
+            "sse": false
+          },
+          "description": "MCP capabilities supported by the agent."
+        },
+        "promptCapabilities": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/PromptCapabilities"
+            }
+          ],
+          "default": {
+            "audio": false,
+            "embeddedContext": false,
+            "image": false
+          },
+          "description": "Prompt capabilities supported by the agent."
+        },
+        "sessionCapabilities": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/SessionCapabilities"
+            }
+          ],
+          "default": {}
+        }
+      },
+      "type": "object"
+    },
+    "PromptCapabilities": {
+      "description": "Prompt capabilities supported by the agent in `session/prompt` requests.\n\nBaseline agent functionality requires support for [`ContentBlock::Text`]\nand [`ContentBlock::ResourceLink`] in prompt requests.\n\nOther variants must be explicitly opted in to.\nCapabilities for different types of content in prompt requests.\n\nIndicates which content types beyond the baseline (text and resource links)\nthe agent can process.\n\nSee protocol docs: [Prompt Capabilities](https://agentclientprotocol.com/protocol/initialization#prompt-capabilities)",
+      "properties": {
+        "audio": {
+          "default": false,
+          "description": "Agent supports [`ContentBlock::Audio`].",
+          "type": "boolean"
+        },
+        "embeddedContext": {
+          "default": false,
+          "description": "Agent supports embedded context in `session/prompt` requests.\n\nWhen enabled, the Client is allowed to include [`ContentBlock::Resource`]\nin prompt requests for pieces of context that are referenced in the message.",
+          "type": "boolean"
+        },
+        "image": {
+          "default": false,
+          "description": "Agent supports [`ContentBlock::Image`].",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "McpCapabilities": {
+      "description": "MCP capabilities supported by the agent",
+      "properties": {
+        "http": {
+          "default": false,
+          "description": "Agent supports [`McpServer::Http`].",
+          "type": "boolean"
+        },
+        "sse": {
+          "default": false,
+          "description": "Agent supports [`McpServer::Sse`].",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "SessionCapabilities": {
+      "description": "Session capabilities supported by the agent.\n\nAs a baseline, all Agents **MUST** support `session/new`, `session/prompt`, `session/cancel`, and `session/update`.\n\nOptionally, they **MAY** support other session methods and notifications by specifying additional capabilities.\n\nNote: `session/load` is still handled by the top-level `load_session` capability. This will be unified in future versions of the protocol.\n\nSee protocol docs: [Session Capabilities](https://agentclientprotocol.com/protocol/initialization#session-capabilities)",
+      "properties": {},
+      "type": "object"
+    },
+    "ClientCapabilities": {
+      "description": "Capabilities supported by the client.\n\nAdvertised during initialization to inform the agent about\navailable features and methods.\n\nSee protocol docs: [Client Capabilities](https://agentclientprotocol.com/protocol/initialization#client-capabilities)",
+      "properties": {
+        "fs": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/FileSystemCapabilities"
+            }
+          ],
+          "default": {
+            "readTextFile": false,
+            "writeTextFile": false
+          },
+          "description": "File system capabilities supported by the client.\nDetermines which file operations the agent can request."
+        },
+        "terminal": {
+          "default": false,
+          "description": "Whether the Client support all `terminal/*` methods.",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    }
+  }
+}

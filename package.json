@@ -1,0 +1,13 @@
+{
+  "name": "acp-agent-monitor",
+  "version": "1.0.0",
+  "description": "Daily monitor for ACP agent capability changes",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node script/check.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

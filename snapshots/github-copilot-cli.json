@@ -1,0 +1,26 @@
+{
+  "agentInfo": {
+    "name": "Copilot",
+    "title": "Copilot",
+    "version": "0.0.421"
+  },
+  "protocolVersion": 1,
+  "agentCapabilities": {
+    "loadSession": true,
+    "promptCapabilities": {
+      "image": true,
+      "audio": false,
+      "embeddedContext": true
+    },
+    "sessionCapabilities": {
+      "list": {}
+    }
+  },
+  "authMethods": [
+    {
+      "id": "copilot-login",
+      "name": "Log in with Copilot CLI",
+      "description": "Run `copilot login` in the terminal"
+    }
+  ]
+}

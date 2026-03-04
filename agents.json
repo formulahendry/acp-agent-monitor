@@ -1,0 +1,32 @@
+{
+  "$schema": "./agents.schema.json",
+  "agents": [
+    {
+      "id": "github-copilot-cli",
+      "name": "GitHub Copilot CLI",
+      "spawn": {
+        "command": "npx",
+        "args": ["-y", "@github/copilot", "--acp", "--stdio"],
+        "timeoutMs": 30000
+      },
+      "initializeRequest": {
+        "protocolVersion": 1,
+        "clientCapabilities": {}
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "id": "acp-spec-schema",
+      "name": "ACP Protocol Schema (AgentCapabilities)",
+      "url": "https://raw.githubusercontent.com/agentclientprotocol/agent-client-protocol/main/schema/schema.json",
+      "extract": [
+        "AgentCapabilities",
+        "PromptCapabilities",
+        "McpCapabilities",
+        "SessionCapabilities",
+        "ClientCapabilities"
+      ]
+    }
+  ]
+}
