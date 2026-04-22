@@ -1,29 +1,12 @@
 {
-  "agentInfo": {
-    "name": "Copilot",
-    "title": "Copilot"
-  },
-  "protocolVersion": 1,
-  "agentCapabilities": {
-    "loadSession": true,
-    "mcpCapabilities": {
-      "http": true,
-      "sse": true
-    },
-    "promptCapabilities": {
-      "image": true,
-      "audio": false,
-      "embeddedContext": true
-    },
-    "sessionCapabilities": {
-      "list": {}
-    }
-  },
-  "authMethods": [
-    {
-      "id": "copilot-login",
-      "name": "Log in with Copilot CLI",
-      "description": "Run `copilot login` in the terminal"
-    }
-  ]
+  "error": "Timeout after 30000ms — agent did not respond to initialize",
+  "agentConfig": {
+    "command": "npx",
+    "args": [
+      "-y",
+      "@github/copilot",
+      "--acp",
+      "--stdio"
+    ]
+  }
 }
