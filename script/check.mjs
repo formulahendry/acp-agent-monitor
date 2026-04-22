@@ -114,12 +114,8 @@ async function probeAgent(agent) {
 
         // Timeout guard
         timer = setTimeout(() => {
-            console.log(`  ✗ Timeout after ${timeout}ms`);
+            console.log(`  ✗ Timeout after ${timeout}ms — keeping previous snapshot`);
             cleanup('timeout');
-            writeSnapshot(agent.id, {
-                error: `Timeout after ${timeout}ms — agent did not respond to initialize`,
-                agentConfig: {command: agent.spawn.command, args: agent.spawn.args},
-            });
             resolvePromise();
         }, timeout);
 
@@ -144,11 +140,7 @@ async function probeAgent(agent) {
                     cleanup('got response');
 
                     if (parsed.error) {
-                        console.log(`  ✗ Agent returned error: ${parsed.error.message}`);
-                        writeSnapshot(agent.id, {
-                            error: parsed.error,
-                            agentConfig: {command: agent.spawn.command, args: agent.spawn.args},
-                        });
+                        console.log(`  ✗ Agent returned error: ${parsed.error.message} — keeping previous snapshot`);
                     } else {
                         const result = parsed.result;
                         console.log(`  Agent: ${result.agentInfo?.name ?? 'unknown'} v${result.agentInfo?.version ?? '?'}`);
@@ -184,23 +176,15 @@ async function probeAgent(agent) {
         });
 
         child.on('error', (err) => {
-            console.log(`  ✗ Failed to spawn: ${err.message}`);
+            console.log(`  ✗ Failed to spawn: ${err.message} — keeping previous snapshot`);
             cleanup('spawn error');
-            writeSnapshot(agent.id, {
-                error: `Failed to spawn: ${err.message}`,
-                agentConfig: {command: agent.spawn.command, args: agent.spawn.args},
-            });
             resolvePromise();
         });
 
         child.on('exit', (code, signal) => {
             if (!resolved) {
-                console.log(`  ✗ Process exited before responding (code=${code}, signal=${signal})`);
+                console.log(`  ✗ Process exited before responding (code=${code}, signal=${signal}) — keeping previous snapshot`);
                 cleanup('premature exit');
-                writeSnapshot(agent.id, {
-                    error: `Process exited before responding (code=${code}, signal=${signal})`,
-                    agentConfig: {command: agent.spawn.command, args: agent.spawn.args},
-                });
                 resolvePromise();
             }
         });
