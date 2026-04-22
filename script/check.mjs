@@ -24,6 +24,16 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const SNAPSHOTS_DIR = resolve(ROOT, 'snapshots');
 const CONFIG_PATH = resolve(ROOT, 'agents.json');
+const ERRORS_FILE = process.env.PROBE_ERRORS_FILE ?? '/tmp/probe-errors.json';
+
+// Collects probe/schema failures for this run. Written to ERRORS_FILE at the
+// end so the GitHub Actions workflow can open/update a dedicated issue.
+/** @type {Array<{id: string, name: string, type: 'agent'|'schema', message: string, command?: string, url?: string}>} */
+const errors = [];
+
+function recordError(entry) {
+    errors.push(entry);
+}
 
 // ---------------------------------------------------------------------------
 // CLI argument parsing
@@ -112,14 +122,14 @@ async function probeAgent(agent) {
             }
         };
 
+        const commandStr = `${agent.spawn.command} ${agent.spawn.args.join(' ')}`;
+
         // Timeout guard
         timer = setTimeout(() => {
-            console.log(`  ✗ Timeout after ${timeout}ms`);
+            const msg = `Timeout after ${timeout}ms`;
+            console.log(`  ✗ ${msg} — keeping previous snapshot`);
+            recordError({id: agent.id, name: agent.name, type: 'agent', message: msg, command: commandStr});
             cleanup('timeout');
-            writeSnapshot(agent.id, {
-                error: `Timeout after ${timeout}ms — agent did not respond to initialize`,
-                agentConfig: {command: agent.spawn.command, args: agent.spawn.args},
-            });
             resolvePromise();
         }, timeout);
 
@@ -144,11 +154,9 @@ async function probeAgent(agent) {
                     cleanup('got response');
 
                     if (parsed.error) {
-                        console.log(`  ✗ Agent returned error: ${parsed.error.message}`);
-                        writeSnapshot(agent.id, {
-                            error: parsed.error,
-                            agentConfig: {command: agent.spawn.command, args: agent.spawn.args},
-                        });
+                        const msg = `Agent returned error: ${parsed.error.message}`;
+                        console.log(`  ✗ ${msg} — keeping previous snapshot`);
+                        recordError({id: agent.id, name: agent.name, type: 'agent', message: msg, command: commandStr});
                     } else {
                         const result = parsed.result;
                         console.log(`  Agent: ${result.agentInfo?.name ?? 'unknown'} v${result.agentInfo?.version ?? '?'}`);
@@ -184,23 +192,20 @@ async function probeAgent(agent) {
         });
 
         child.on('error', (err) => {
-            console.log(`  ✗ Failed to spawn: ${err.message}`);
+            const msg = `Failed to spawn: ${err.message}`;
+            console.log(`  ✗ ${msg} — keeping previous snapshot`);
+            recordError({id: agent.id, name: agent.name, type: 'agent', message: msg, command: commandStr});
             cleanup('spawn error');
-            writeSnapshot(agent.id, {
-                error: `Failed to spawn: ${err.message}`,
-                agentConfig: {command: agent.spawn.command, args: agent.spawn.args},
-            });
             resolvePromise();
         });
 
         child.on('exit', (code, signal) => {
             if (!resolved) {
-                console.log(`  ✗ Process exited before responding (code=${code}, signal=${signal})`);
+                const msg = `Process exited before responding (code=${code}, signal=${signal})`;
+                const detail = stderr.trim() ? `${msg}: ${stderr.trim().split('\n').slice(-5).join(' | ')}` : msg;
+                console.log(`  ✗ ${msg} — keeping previous snapshot`);
+                recordError({id: agent.id, name: agent.name, type: 'agent', message: detail, command: commandStr});
                 cleanup('premature exit');
-                writeSnapshot(agent.id, {
-                    error: `Process exited before responding (code=${code}, signal=${signal})`,
-                    agentConfig: {command: agent.spawn.command, args: agent.spawn.args},
-                });
                 resolvePromise();
             }
         });
@@ -271,11 +276,9 @@ async function fetchSchema(schemaConfig) {
             definitions: extracted,
         });
     } catch (err) {
-        console.log(`  ✗ Failed to fetch schema: ${err.message}`);
-        writeSnapshot(schemaConfig.id, {
-            sourceUrl: schemaConfig.url,
-            error: `Failed to fetch: ${err.message}`,
-        });
+        const msg = `Failed to fetch schema: ${err.message}`;
+        console.log(`  ✗ ${msg} — keeping previous snapshot`);
+        recordError({id: schemaConfig.id, name: schemaConfig.name, type: 'schema', message: msg, url: schemaConfig.url});
     }
 }
 
@@ -307,6 +310,21 @@ async function main() {
         for (const schema of toFetch) {
             await fetchSchema(schema);
         }
+    }
+
+    // Emit an error artifact for the workflow (always write it so downstream
+    // steps can read a stable path; empty list means "no errors this run").
+    try {
+        writeFileSync(
+            ERRORS_FILE,
+            JSON.stringify({generatedAt: new Date().toISOString(), errors}, null, 2) + '\n',
+            'utf-8',
+        );
+        if (errors.length > 0) {
+            console.log(`\n⚠ ${errors.length} probe error(s) recorded → ${ERRORS_FILE}`);
+        }
+    } catch (err) {
+        console.log(`\n⚠ Could not write errors file (${ERRORS_FILE}): ${err.message}`);
     }
 
     console.log('\n✅ Done.');

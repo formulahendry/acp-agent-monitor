@@ -27,6 +27,8 @@ jobs:
 
       - name: Probe all agents and fetch schemas
         run: node script/check.mjs
+        env:
+          PROBE_ERRORS_FILE: /tmp/probe-errors.json
 
       - name: Commit snapshot changes
         id: commit
@@ -83,4 +85,99 @@ jobs:
                 labels: ['capability-change'],
               });
               console.log(`Created issue #${issue.data.number}`);
+            }
+
+      - name: Create or update issue on probe error
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = '/tmp/probe-errors.json';
+            if (!fs.existsSync(path)) {
+              console.log('No probe errors file found — skipping.');
+              return;
+            }
+
+            let payload;
+            try {
+              payload = JSON.parse(fs.readFileSync(path, 'utf8'));
+            } catch (err) {
+              console.log(`Could not parse ${path}: ${err.message}`);
+              return;
+            }
+
+            const errors = Array.isArray(payload.errors) ? payload.errors : [];
+            if (errors.length === 0) {
+              console.log('No probe errors recorded — nothing to report.');
+              return;
+            }
+
+            const date = new Date().toISOString().split('T')[0];
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            const lines = errors.map((e) => {
+              const where = e.command ? `\`${e.command}\`` : (e.url ? `<${e.url}>` : '');
+              return `- **${e.name}** (\`${e.id}\`, ${e.type}): ${e.message}${where ? `\n  - ${where}` : ''}`;
+            });
+
+            const summary = lines.join('\n');
+            const jsonBlock = '```json\n' + JSON.stringify(payload, null, 2) + '\n```';
+            const body = [
+              `The ACP agent monitor hit ${errors.length} error(s) during this run.`,
+              '',
+              '### Failing probes',
+              summary,
+              '',
+              `Workflow run: ${runUrl}`,
+              '',
+              '<details><summary>Machine-readable error payload</summary>',
+              '',
+              jsonBlock,
+              '',
+              '</details>',
+              '',
+              'Snapshots for failing probes were intentionally **not** overwritten; the last-known-good capability data is preserved. Close this issue once the probes are healthy again.',
+            ].join('\n');
+
+            // Ensure the probe-error label exists (best-effort).
+            try {
+              await github.rest.issues.createLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'probe-error',
+                color: 'b60205',
+                description: 'Agent/schema probe failed during monitor run',
+              });
+            } catch (err) {
+              // 422 = already exists; anything else we just log and continue.
+              if (err.status !== 422) {
+                console.log(`Could not create label (non-fatal): ${err.message}`);
+              }
+            }
+
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'probe-error',
+            });
+
+            if (existing.data.length > 0) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.data[0].number,
+                body: `### Probe errors on ${date}\n\n${summary}\n\nWorkflow run: ${runUrl}\n\n<details><summary>Machine-readable error payload</summary>\n\n${jsonBlock}\n\n</details>`,
+              });
+              console.log(`Commented on existing probe-error issue #${existing.data[0].number}`);
+            } else {
+              const issue = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `🚨 ACP Agent Probe Error (${date})`,
+                body,
+                labels: ['probe-error'],
+              });
+              console.log(`Created probe-error issue #${issue.data.number}`);
             }
