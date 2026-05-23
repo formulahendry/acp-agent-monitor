@@ -4,6 +4,15 @@
     "AgentCapabilities": {
       "description": "Capabilities supported by the agent.\n\nAdvertised during initialization to inform the client about\navailable features and content types.\n\nSee protocol docs: [Agent Capabilities](https://agentclientprotocol.com/protocol/initialization#agent-capabilities)",
       "properties": {
+        "auth": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/AgentAuthCapabilities"
+            }
+          ],
+          "default": {},
+          "description": "Authentication-related capabilities supported by the agent."
+        },
         "loadSession": {
           "default": false,
           "description": "Whether the agent supports `session/load`.",
