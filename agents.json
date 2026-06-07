@@ -23,7 +23,7 @@
     {
       "id": "acp-spec-schema",
       "name": "ACP Protocol Schema (AgentCapabilities)",
-      "url": "https://raw.githubusercontent.com/agentclientprotocol/agent-client-protocol/main/schema/schema.json",
+      "url": "https://raw.githubusercontent.com/agentclientprotocol/agent-client-protocol/main/schema/v1/schema.json",
       "extract": [
         "AgentCapabilities",
         "PromptCapabilities",
