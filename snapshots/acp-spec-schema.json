@@ -1,5 +1,5 @@
 {
-  "sourceUrl": "https://raw.githubusercontent.com/agentclientprotocol/agent-client-protocol/main/schema/schema.json",
+  "sourceUrl": "https://raw.githubusercontent.com/agentclientprotocol/agent-client-protocol/main/schema/v1/schema.json",
   "definitions": {
     "AgentCapabilities": {
       "description": "Capabilities supported by the agent.\n\nAdvertised during initialization to inform the client about\navailable features and content types.\n\nSee protocol docs: [Agent Capabilities](https://agentclientprotocol.com/protocol/initialization#agent-capabilities)",
@@ -116,6 +116,18 @@
             }
           ],
           "description": "Whether the agent supports `session/close`.",
+          "x-deserialize-default-on-error": true
+        },
+        "delete": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SessionDeleteCapabilities"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether the agent supports `session/delete`.\n\nOptional. Omitted or `null` both mean the agent does not advertise support.\nSupplying `{}` means the agent supports deleting sessions from `session/list`.",
           "x-deserialize-default-on-error": true
         },
         "list": {
