@@ -3,134 +3,100 @@
   "definitions": {
     "AgentCapabilities": {
       "description": "Capabilities supported by the agent.\n\nAdvertised during initialization to inform the client about\navailable features and content types.\n\nSee protocol docs: [Agent Capabilities](https://agentclientprotocol.com/protocol/initialization#agent-capabilities)",
+      "type": "object",
       "properties": {
-        "auth": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/AgentAuthCapabilities"
-            }
-          ],
-          "default": {},
-          "description": "Authentication-related capabilities supported by the agent."
-        },
         "loadSession": {
-          "default": false,
           "description": "Whether the agent supports `session/load`.",
-          "type": "boolean"
-        },
-        "mcpCapabilities": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/McpCapabilities"
-            }
-          ],
-          "default": {
-            "http": false,
-            "sse": false
-          },
-          "description": "MCP capabilities supported by the agent."
+          "type": "boolean",
+          "default": false
         },
         "promptCapabilities": {
+          "description": "Prompt capabilities supported by the agent.",
+          "default": {
+            "image": false,
+            "audio": false,
+            "embeddedContext": false
+          },
           "allOf": [
             {
               "$ref": "#/$defs/PromptCapabilities"
             }
-          ],
+          ]
+        },
+        "mcpCapabilities": {
+          "description": "MCP capabilities supported by the agent.",
           "default": {
-            "audio": false,
-            "embeddedContext": false,
-            "image": false
+            "http": false,
+            "sse": false
           },
-          "description": "Prompt capabilities supported by the agent."
+          "allOf": [
+            {
+              "$ref": "#/$defs/McpCapabilities"
+            }
+          ]
         },
         "sessionCapabilities": {
+          "default": {},
           "allOf": [
             {
               "$ref": "#/$defs/SessionCapabilities"
             }
-          ],
-          "default": {}
+          ]
+        },
+        "auth": {
+          "description": "Authentication-related capabilities supported by the agent.",
+          "default": {},
+          "allOf": [
+            {
+              "$ref": "#/$defs/AgentAuthCapabilities"
+            }
+          ]
         }
-      },
-      "type": "object"
+      }
     },
     "PromptCapabilities": {
       "description": "Prompt capabilities supported by the agent in `session/prompt` requests.\n\nBaseline agent functionality requires support for [`ContentBlock::Text`]\nand [`ContentBlock::ResourceLink`] in prompt requests.\n\nOther variants must be explicitly opted in to.\nCapabilities for different types of content in prompt requests.\n\nIndicates which content types beyond the baseline (text and resource links)\nthe agent can process.\n\nSee protocol docs: [Prompt Capabilities](https://agentclientprotocol.com/protocol/initialization#prompt-capabilities)",
+      "type": "object",
       "properties": {
+        "image": {
+          "description": "Agent supports [`ContentBlock::Image`].",
+          "type": "boolean",
+          "default": false
+        },
         "audio": {
-          "default": false,
           "description": "Agent supports [`ContentBlock::Audio`].",
-          "type": "boolean"
+          "type": "boolean",
+          "default": false
         },
         "embeddedContext": {
-          "default": false,
           "description": "Agent supports embedded context in `session/prompt` requests.\n\nWhen enabled, the Client is allowed to include [`ContentBlock::Resource`]\nin prompt requests for pieces of context that are referenced in the message.",
-          "type": "boolean"
-        },
-        "image": {
-          "default": false,
-          "description": "Agent supports [`ContentBlock::Image`].",
-          "type": "boolean"
+          "type": "boolean",
+          "default": false
         }
-      },
-      "type": "object"
+      }
     },
     "McpCapabilities": {
       "description": "MCP capabilities supported by the agent",
+      "type": "object",
       "properties": {
         "http": {
-          "default": false,
           "description": "Agent supports [`McpServer::Http`].",
-          "type": "boolean"
+          "type": "boolean",
+          "default": false
         },
         "sse": {
-          "default": false,
           "description": "Agent supports [`McpServer::Sse`].",
-          "type": "boolean"
+          "type": "boolean",
+          "default": false
         }
-      },
-      "type": "object"
+      }
     },
     "SessionCapabilities": {
       "description": "Session capabilities supported by the agent.\n\nAs a baseline, all Agents **MUST** support `session/new`, `session/prompt`, `session/cancel`, and `session/update`.\n\nOptionally, they **MAY** support other session methods and notifications by specifying additional capabilities.\n\nNote: `session/load` is still handled by the top-level `load_session` capability. This will be unified in future versions of the protocol.\n\nSee protocol docs: [Session Capabilities](https://agentclientprotocol.com/protocol/initialization#session-capabilities)",
+      "type": "object",
       "properties": {
-        "additionalDirectories": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/SessionAdditionalDirectoriesCapabilities"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "description": "Whether the agent supports `additionalDirectories` on supported session lifecycle requests.\n\nAgents that also support `session/list` may return\n`SessionInfo.additionalDirectories` to report the complete ordered\nadditional-root list associated with a listed session.",
-          "x-deserialize-default-on-error": true
-        },
-        "close": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/SessionCloseCapabilities"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "description": "Whether the agent supports `session/close`.",
-          "x-deserialize-default-on-error": true
-        },
-        "delete": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/SessionDeleteCapabilities"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "description": "Whether the agent supports `session/delete`.\n\nOptional. Omitted or `null` both mean the agent does not advertise support.\nSupplying `{}` means the agent supports deleting sessions from `session/list`.",
-          "x-deserialize-default-on-error": true
-        },
         "list": {
+          "description": "Whether the agent supports `session/list`.",
           "anyOf": [
             {
               "$ref": "#/$defs/SessionListCapabilities"
@@ -139,10 +105,34 @@
               "type": "null"
             }
           ],
-          "description": "Whether the agent supports `session/list`.",
+          "x-deserialize-default-on-error": true
+        },
+        "delete": {
+          "description": "Whether the agent supports `session/delete`.\n\nOptional. Omitted or `null` both mean the agent does not advertise support.\nSupplying `{}` means the agent supports deleting sessions from `session/list`.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SessionDeleteCapabilities"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "x-deserialize-default-on-error": true
+        },
+        "additionalDirectories": {
+          "description": "Whether the agent supports `additionalDirectories` on supported session lifecycle requests.\n\nAgents that also support `session/list` may return\n`SessionInfo.additionalDirectories` to report the complete ordered\nadditional-root list associated with a listed session.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SessionAdditionalDirectoriesCapabilities"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "x-deserialize-default-on-error": true
         },
         "resume": {
+          "description": "Whether the agent supports `session/resume`.",
           "anyOf": [
             {
               "$ref": "#/$defs/SessionResumeCapabilities"
@@ -151,34 +141,44 @@
               "type": "null"
             }
           ],
-          "description": "Whether the agent supports `session/resume`.",
+          "x-deserialize-default-on-error": true
+        },
+        "close": {
+          "description": "Whether the agent supports `session/close`.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SessionCloseCapabilities"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "x-deserialize-default-on-error": true
         }
-      },
-      "type": "object"
+      }
     },
     "ClientCapabilities": {
       "description": "Capabilities supported by the client.\n\nAdvertised during initialization to inform the agent about\navailable features and methods.\n\nSee protocol docs: [Client Capabilities](https://agentclientprotocol.com/protocol/initialization#client-capabilities)",
+      "type": "object",
       "properties": {
         "fs": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/FileSystemCapabilities"
-            }
-          ],
+          "description": "File system capabilities supported by the client.\nDetermines which file operations the agent can request.",
           "default": {
             "readTextFile": false,
             "writeTextFile": false
           },
-          "description": "File system capabilities supported by the client.\nDetermines which file operations the agent can request."
+          "allOf": [
+            {
+              "$ref": "#/$defs/FileSystemCapabilities"
+            }
+          ]
         },
         "terminal": {
-          "default": false,
           "description": "Whether the Client support all `terminal/*` methods.",
-          "type": "boolean"
+          "type": "boolean",
+          "default": false
         }
-      },
-      "type": "object"
+      }
     }
   }
 }
