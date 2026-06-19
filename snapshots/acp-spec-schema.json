@@ -36,6 +36,7 @@
           ]
         },
         "sessionCapabilities": {
+          "description": "Session lifecycle and prompt capabilities advertised by the agent.",
           "default": {},
           "allOf": [
             {
