@@ -190,6 +190,18 @@
           "type": "boolean",
           "default": false,
           "x-deserialize-default-on-error": true
+        },
+        "session": {
+          "description": "Session-related capabilities supported by the client.\n\nOptional. Omitted or `null` both mean the client does not advertise any\nsession-related extensions.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ClientSessionCapabilities"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "x-deserialize-default-on-error": true
         }
       }
     }
