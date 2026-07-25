@@ -202,6 +202,18 @@
             }
           ],
           "x-deserialize-default-on-error": true
+        },
+        "elicitation": {
+          "description": "Elicitation capabilities supported by the client.\nDetermines which elicitation modes the agent may use.\n\nOptional. Omitted or `null` both mean the client does not advertise\nelicitation support.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ElicitationCapabilities"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "x-deserialize-default-on-error": true
         }
       }
     }
