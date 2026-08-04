@@ -16,6 +16,7 @@
       "embeddedContext": true
     },
     "sessionCapabilities": {
+      "close": {},
       "list": {}
     }
   },
