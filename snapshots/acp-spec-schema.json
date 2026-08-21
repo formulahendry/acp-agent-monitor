@@ -203,6 +203,18 @@
           ],
           "x-deserialize-default-on-error": true
         },
+        "auth": {
+          "description": "Authentication capabilities supported by the client.\nDetermines which authentication method types the agent may include\nin its `InitializeResponse`.",
+          "x-deserialize-default-on-error": true,
+          "default": {
+            "terminal": false
+          },
+          "allOf": [
+            {
+              "$ref": "#/$defs/AuthCapabilities"
+            }
+          ]
+        },
         "elicitation": {
           "description": "Elicitation capabilities supported by the client.\nDetermines which elicitation modes the agent may use.\n\nOptional. Omitted or `null` both mean the client does not advertise\nelicitation support.",
           "anyOf": [
