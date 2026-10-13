@@ -5,6 +5,9 @@
   },
   "protocolVersion": 1,
   "agentCapabilities": {
+    "auth": {
+      "logout": {}
+    },
     "loadSession": true,
     "mcpCapabilities": {
       "http": true,
