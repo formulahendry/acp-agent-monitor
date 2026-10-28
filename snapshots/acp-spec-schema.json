@@ -2,7 +2,7 @@
   "sourceUrl": "https://raw.githubusercontent.com/agentclientprotocol/agent-client-protocol/main/schema/v1/schema.json",
   "definitions": {
     "AgentCapabilities": {
-      "description": "Capabilities supported by the agent.\n\nAdvertised during initialization to inform the client about\navailable features and content types.\n\nSee protocol docs: [Agent Capabilities](https://agentclientprotocol.com/protocol/initialization#agent-capabilities)",
+      "description": "Capabilities supported by the agent.\n\nAdvertised during initialization to inform the client about\navailable features and content types.\n\nSee protocol docs: [Agent Capabilities](https://agentclientprotocol.com/protocol/v1/initialization#agent-capabilities)",
       "type": "object",
       "properties": {
         "loadSession": {
@@ -61,23 +61,23 @@
       }
     },
     "PromptCapabilities": {
-      "description": "Prompt capabilities supported by the agent in `session/prompt` requests.\n\nBaseline agent functionality requires support for [`ContentBlock::Text`]\nand [`ContentBlock::ResourceLink`] in prompt requests.\n\nOther variants must be explicitly opted in to.\nCapabilities for different types of content in prompt requests.\n\nIndicates which content types beyond the baseline (text and resource links)\nthe agent can process.\n\nSee protocol docs: [Prompt Capabilities](https://agentclientprotocol.com/protocol/initialization#prompt-capabilities)",
+      "description": "Prompt capabilities supported by the agent in `session/prompt` requests.\n\nBaseline agent functionality requires support for `text`\nand `resource_link` content blocks in prompt requests.\n\nOther variants must be explicitly opted in to.\nCapabilities for different types of content in prompt requests.\n\nIndicates which content types beyond the baseline (text and resource links)\nthe agent can process.\n\nSee protocol docs: [Prompt Capabilities](https://agentclientprotocol.com/protocol/v1/initialization#prompt-capabilities)",
       "type": "object",
       "properties": {
         "image": {
-          "description": "Agent supports [`ContentBlock::Image`].",
+          "description": "Agent supports `image` content blocks.",
           "type": "boolean",
           "default": false,
           "x-deserialize-default-on-error": true
         },
         "audio": {
-          "description": "Agent supports [`ContentBlock::Audio`].",
+          "description": "Agent supports `audio` content blocks.",
           "type": "boolean",
           "default": false,
           "x-deserialize-default-on-error": true
         },
         "embeddedContext": {
-          "description": "Agent supports embedded context in `session/prompt` requests.\n\nWhen enabled, the Client is allowed to include [`ContentBlock::Resource`]\nin prompt requests for pieces of context that are referenced in the message.",
+          "description": "Agent supports embedded context in `session/prompt` requests.\n\nWhen enabled, the Client is allowed to include `resource` content blocks\nin prompt requests for pieces of context that are referenced in the message.",
           "type": "boolean",
           "default": false,
           "x-deserialize-default-on-error": true
@@ -89,13 +89,13 @@
       "type": "object",
       "properties": {
         "http": {
-          "description": "Agent supports [`McpServer::Http`].",
+          "description": "Agent supports `http` MCP servers.",
           "type": "boolean",
           "default": false,
           "x-deserialize-default-on-error": true
         },
         "sse": {
-          "description": "Agent supports [`McpServer::Sse`].",
+          "description": "Agent supports `sse` MCP servers.",
           "type": "boolean",
           "default": false,
           "x-deserialize-default-on-error": true
@@ -103,7 +103,7 @@
       }
     },
     "SessionCapabilities": {
-      "description": "Session capabilities supported by the agent.\n\nAs a baseline, all Agents **MUST** support `session/new`, `session/prompt`, `session/cancel`, and `session/update`.\n\nOptionally, they **MAY** support other session methods and notifications by specifying additional capabilities.\n\nNote: `session/load` is still handled by the top-level `load_session` capability. This will be unified in future versions of the protocol.\n\nSee protocol docs: [Session Capabilities](https://agentclientprotocol.com/protocol/initialization#session-capabilities)",
+      "description": "Session capabilities supported by the agent.\n\nAs a baseline, all Agents **MUST** support `session/new`, `session/prompt`, `session/cancel`, and `session/update`.\n\nOptionally, they **MAY** support other session methods and notifications by specifying additional capabilities.\n\nNote: `session/load` is still handled by the top-level `loadSession` capability. This will be unified in future versions of the protocol.\n\nSee protocol docs: [Session Capabilities](https://agentclientprotocol.com/protocol/v1/initialization#session-capabilities)",
       "type": "object",
       "properties": {
         "list": {
@@ -169,7 +169,7 @@
       }
     },
     "ClientCapabilities": {
-      "description": "Capabilities supported by the client.\n\nAdvertised during initialization to inform the agent about\navailable features and methods.\n\nSee protocol docs: [Client Capabilities](https://agentclientprotocol.com/protocol/initialization#client-capabilities)",
+      "description": "Capabilities supported by the client.\n\nAdvertised during initialization to inform the agent about\navailable features and methods.\n\nSee protocol docs: [Client Capabilities](https://agentclientprotocol.com/protocol/v1/initialization#client-capabilities)",
       "type": "object",
       "properties": {
         "fs": {
