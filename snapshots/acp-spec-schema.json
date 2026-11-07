@@ -142,6 +142,18 @@
           ],
           "x-deserialize-default-on-error": true
         },
+        "systemPrompt": {
+          "description": "Whether the agent supports `systemPrompt` on session lifecycle requests.\n\nOptional. Omitted or `null` both mean the agent does not advertise support.\nSupplying `{}` means the agent supports `systemPrompt` in `append` mode.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SessionSystemPromptCapabilities"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "x-deserialize-default-on-error": true
+        },
         "resume": {
           "description": "Whether the agent supports `session/resume`.\n\nOptional. Omitted or `null` both mean the agent does not advertise support.\nSupplying `{}` means the agent supports resuming sessions.",
           "anyOf": [
